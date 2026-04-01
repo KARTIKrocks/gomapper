@@ -394,7 +394,7 @@ func TestIntegration_ExpectedOutputMatch(t *testing.T) {
 	}
 
 	gen := readGenerated(t, dir, out)
-	expected, err := os.ReadFile(filepath.Join(dir, "expected_gen.go"))
+	expected, err := os.ReadFile(filepath.Join(dir, "expected_gen.go.golden"))
 	if err != nil {
 		t.Fatalf("reading expected output: %v", err)
 	}
@@ -731,7 +731,7 @@ func TestIntegration_AdvancedExpectedOutputMatch(t *testing.T) {
 	}
 
 	gen := readGenerated(t, dir, out)
-	expected, err := os.ReadFile(filepath.Join(dir, "expected_gen.go"))
+	expected, err := os.ReadFile(filepath.Join(dir, "expected_gen.go.golden"))
 	if err != nil {
 		t.Fatalf("reading expected output: %v", err)
 	}
