@@ -12,8 +12,8 @@
 
 <!-- How was this tested? -->
 
-- [ ] Unit tests pass (`go test ./...`)
-- [ ] Lint passes (`golangci-lint run ./...`)
+- [ ] fmt, vet, lint, test, build passes (make all)
+- [ ] New code has tests where appropriate
 - [ ] Generated code compiles for affected scenarios
 
 ## Related Issues
