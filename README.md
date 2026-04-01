@@ -3,9 +3,9 @@
 Code generation tool that parses Go struct definitions and generates type-safe mapping functions. Zero reflection, zero runtime cost. In `func` mode (default), the generated code has zero dependencies.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/KARTIKrocks/gomapper.svg)](https://pkg.go.dev/github.com/KARTIKrocks/gomapper)
-[![CI](https://github.com/KARTIKrocks/gomapper/actions/workflows/ci.yml/badge.svg)](https://github.com/KARTIKrocks/gomapper/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/KARTIKrocks/gomapper)](https://goreportcard.com/report/github.com/KARTIKrocks/gomapper)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/KARTIKrocks/gomapper)](go.mod)
+[![CI](https://github.com/KARTIKrocks/gomapper/actions/workflows/ci.yml/badge.svg)](https://github.com/KARTIKrocks/gomapper/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/KARTIKrocks/gomapper)](LICENSE)
 [![GitHub tag](https://img.shields.io/github/v/tag/KARTIKrocks/gomapper)](https://github.com/KARTIKrocks/gomapper/releases)
 
@@ -39,19 +39,19 @@ This produces a `mapper_gen.go` file with pure mapping functions — no runtime 
 
 ### Flags
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `-src` | | Source type name |
-| `-dst` | | Destination type name |
-| `-pairs` | | Comma-separated `Src:Dst` pairs |
-| `-output` | `mapper_gen.go` | Output file name |
-| `-mode` | `func` | `func` (pure functions), `register`, or `both` |
-| `-bidirectional` | `false` | Generate both S→D and D→S mappings |
-| `-tag` | `map` | Struct tag key for field renaming |
-| `-strict` | `false` | Fail if any destination field is unmapped |
-| `-ci` | `false` | Case-insensitive field name matching |
-| `-nil-safe` | `false` | Generate nil checks for pointer dereferences |
-| `-v` | `false` | Verbose output |
+| Flag             | Default         | Description                                    |
+| ---------------- | --------------- | ---------------------------------------------- |
+| `-src`           |                 | Source type name                               |
+| `-dst`           |                 | Destination type name                          |
+| `-pairs`         |                 | Comma-separated `Src:Dst` pairs                |
+| `-output`        | `mapper_gen.go` | Output file name                               |
+| `-mode`          | `func`          | `func` (pure functions), `register`, or `both` |
+| `-bidirectional` | `false`         | Generate both S→D and D→S mappings             |
+| `-tag`           | `map`           | Struct tag key for field renaming              |
+| `-strict`        | `false`         | Fail if any destination field is unmapped      |
+| `-ci`            | `false`         | Case-insensitive field name matching           |
+| `-nil-safe`      | `false`         | Generate nil checks for pointer dereferences   |
+| `-v`             | `false`         | Verbose output                                 |
 
 ### Modes
 
