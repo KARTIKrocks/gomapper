@@ -100,15 +100,21 @@ someone from running `-pairs Order:OrderDTO` alone: gomapper would still
 the user sees is a `go build` failure for an undefined function, with no
 indication that the fix is "add Address:AddressDTO to -pairs."
 
-## Golden files are the regression net for everything above
+## Golden files are the regression net for most of the above
 
 `integration_test.go` byte-compares fresh output against
-`testdata/{basic,advanced,embedded}/expected_gen.go.golden` (stripping the
-`//go:build ignore` line). Every mechanism above — unmapped-field rendering,
-conversion expressions, nil-safe blocks, slice loops — is exercised through
-these fixtures, not through unit assertions on template strings. A PR that
-changes generated output without touching the matching `.golden` file is
-either untested or (more likely) will fail CI; a PR that updates the
+`testdata/{basic,advanced}/expected_gen.go.golden` (stripping the
+`//go:build ignore` line). Unmapped-field rendering, conversion expressions,
+nil-safe blocks, and slice loops are exercised through these fixtures, not
+through unit assertions on template strings. A PR that changes generated
+output for `basic` or `advanced` without touching the matching `.golden` file
+is either untested or (more likely) will fail CI; a PR that updates the
 `.golden` file without a corresponding source change, or that "fixes" a
 golden file to match a bug rather than fixing the bug, defeats the point of
 the fixture.
+
+`embedded` has no golden file — `TestIntegration_EmbeddedStructPromotedFields`
+checks the promoted-field mapping via targeted `strings.Contains` assertions
+instead. A change affecting embedded-struct output needs those assertions
+kept in sync, the same way `basic`/`advanced` need their `.golden` files kept
+in sync.

@@ -44,8 +44,8 @@
     },
     {
       "id": "golden-file-sync",
-      "rule": "testdata/*/expected_gen.go.golden files are compared byte-for-byte (after stripping the //go:build ignore line) against fresh gomapper output in integration_test.go. A change to internal/matcher or internal/generator that alters generated output for basic, advanced, or embedded testdata must update the corresponding .golden file in the same change, not leave it to fail CI — and the new golden output must still be valid, compilable Go reflecting the intended fix, not just whatever the tool now happens to emit.",
-      "scope": ["internal/matcher/*.go", "internal/generator/*.go", "testdata/**/expected_gen.go.golden"],
+      "rule": "testdata/basic/expected_gen.go.golden and testdata/advanced/expected_gen.go.golden are compared byte-for-byte (after stripping the //go:build ignore line) against fresh gomapper output in integration_test.go — embedded has no golden file and is instead checked via targeted strings.Contains assertions in TestIntegration_EmbeddedStructPromotedFields. A change to internal/matcher or internal/generator that alters generated output for basic or advanced testdata must update the corresponding .golden file in the same change, not leave it to fail CI; a change affecting embedded's output must update the assertions in TestIntegration_EmbeddedStructPromotedFields instead. New golden output must still be valid, compilable Go reflecting the intended fix, not just whatever the tool now happens to emit.",
+      "scope": ["internal/matcher/*.go", "internal/generator/*.go", "testdata/**/expected_gen.go.golden", "integration_test.go"],
       "severity": "low"
     },
     {
