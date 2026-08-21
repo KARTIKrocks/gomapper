@@ -1,0 +1,58 @@
+{
+  "strictness": 2,
+  "commentTypes": ["logic", "syntax", "style"],
+  "triggerOnUpdates": true,
+  "statusCheck": true,
+  "ignorePatterns": "**/testdata/**\n**/*.golden\n**/go.sum\n**/vendor/**\n**/node_modules/**",
+  "instructions": "gomapper (github.com/KARTIKrocks/gomapper) is a Go code-generation tool, not a runtime reflection library: it parses a target package with golang.org/x/tools/go/packages (internal/loader), matches struct fields between a source and destination type (internal/matcher), and renders Go source via text/template (internal/generator) in one of three modes — func (pure functions, zero deps), register (calls into the sibling mapper library's runtime registry), or both. The generated file is committed by the end user and marked 'DO NOT EDIT'. Because there is no runtime reflection, the correctness bar is different from a typical library: bugs here mean gomapper silently emits the wrong Go source, or emits non-deterministic source across identical runs, rather than misbehaving at runtime. Prioritize field-matching correctness, cross-mode (func/register/both) output parity, and generation determinism over style. See .greptile/rules.md for rationale and the mechanisms behind each rule.",
+  "rules": [
+    {
+      "id": "silent-unmapped-field-mismatch",
+      "rule": "A destination field that matcher.matchField cannot resolve is dropped into Unmapped and rendered as a `// TODO: unmapped field` comment unless -strict is passed — the generated struct literal then simply omits that field and it silently takes its zero value at runtime, with no compiler error. Any change to buildSourceIndices, matchField's tag/name lookup order, or the map:\"...\" tag key handling must be checked against this failure mode: a typo'd map:\"...\" tag value, a renamed source or destination field, or a case mismatch (without -ci) must fall through to Unmapped/TODO, never to a mismatched or partially-matched field silently pointing at the wrong source data.",
+      "scope": ["internal/matcher/*.go"],
+      "severity": "high"
+    },
+    {
+      "id": "numeric-conversion-narrowing",
+      "rule": "makeMapping and tryDerefMapping/tryAddrOfMapping accept any pair for which types.ConvertibleTo returns true, and the templates render that as a bare Go conversion (ConvType(src.Field)) with no range check. types.ConvertibleTo is satisfied by narrowing numeric conversions (int64→int32, uint→int8, float64→float32) just as readily as widening ones, and Go's explicit conversion silently truncates or wraps on overflow rather than erroring. Flag any new code path that treats ConvertibleTo as sufficient justification for a numeric conversion without at least distinguishing narrowing from widening (e.g. via reflect-free bit-size comparison on the underlying types.Basic kinds).",
+      "scope": ["internal/matcher/matcher.go"],
+      "severity": "medium"
+    },
+    {
+      "id": "generation-determinism",
+      "rule": "Generated output is committed to the caller's repository and re-run by `go generate`; two runs over unchanged input must byte-for-byte match. Destination fields are matched in struct-declaration order (deterministic), but processNestedDstTags ranges over idx.byTag (a map) to build NestedDstAssignments, and the -ci fallback in matchField ranges over srcByName (a map) to find a case-insensitive match — both iterate in Go's randomized map order. Any new or modified code path that decides emitted-code order, or picks among multiple ambiguous candidate matches, by ranging over a map must sort its keys (or iterate a slice) first, or it will produce a different generated file on every run for the same input.",
+      "scope": ["internal/matcher/matcher.go"],
+      "severity": "medium"
+    },
+    {
+      "id": "generation-mode-parity",
+      "rule": "registryFieldExpr, pureFieldExpr, and sliceLoopExpr in internal/generator/templates.go each independently re-implement the same decision tree over FieldMapping's flags (Deref, AddrOf, IsStructMap, IsSliceMap, NeedsConv, and their combinations) for register mode, func mode, and slice element handling respectively. A new FieldMapping flag or flag combination added in internal/matcher/matcher.go must be threaded through every template variant that switches on those flags — func mode, register mode, both mode, and the slice-loop precompute block — with matching behavior. Do not approve a matcher.go change that adds a new mapping shape without a corresponding update (or an explicit note that it's a no-op) in all three template functions.",
+      "scope": ["internal/generator/templates.go", "internal/matcher/matcher.go"],
+      "severity": "high"
+    },
+    {
+      "id": "nil-safe-flag-coverage",
+      "rule": "The -nil-safe flag's entire contract is 'no generated pointer dereference panics on nil.' nilSafeBlock guards field-level Deref (plain and struct-nested), and sliceLoopExpr's SliceElemDeref branches carry their own `if _v != nil` guards. Every code path in matcher.go that sets Deref=true (tryDerefMapping) or SliceElemDeref=true (trySliceMapping) at the field or slice-element level must have a matching nil-guarded branch in nilSafeBlock or sliceLoopExpr when NilSafe is set — a new dereferencing path that isn't wired into the nil-safe templates will compile fine but silently defeats -nil-safe for that one field, which is worse than the flag not existing because it creates false confidence.",
+      "scope": ["internal/generator/templates.go", "internal/matcher/matcher.go"],
+      "severity": "high"
+    },
+    {
+      "id": "nested-struct-pair-completeness",
+      "rule": "tryStructMapping / tryDerefMapping / tryAddrOfMapping / trySliceMapping mark a field IsStructMap and emit a call to Map<Src>To<Dst> (func mode) or mapper.Map[Dst](...) (register mode) purely from type shape, without checking whether that Src:Dst pair was actually requested via -pairs/-src+-dst (and bidirectional expansion) in main.go. If the nested pair isn't in the type-pairs list, gomapper still succeeds and writes a file that calls an undefined function, and the failure only surfaces later as a `go build` error with no mention of gomapper or the missing pair. A change to how type pairs are collected or expanded in main.go (parseTypePairs, expandBidirectional) should preserve or improve this check, not silently make it easier to omit a required pair.",
+      "scope": ["main.go", "internal/matcher/matcher.go"],
+      "severity": "medium"
+    },
+    {
+      "id": "golden-file-sync",
+      "rule": "testdata/*/expected_gen.go.golden files are compared byte-for-byte (after stripping the //go:build ignore line) against fresh gomapper output in integration_test.go. A change to internal/matcher or internal/generator that alters generated output for basic, advanced, or embedded testdata must update the corresponding .golden file in the same change, not leave it to fail CI — and the new golden output must still be valid, compilable Go reflecting the intended fix, not just whatever the tool now happens to emit.",
+      "scope": ["internal/matcher/*.go", "internal/generator/*.go", "testdata/**/expected_gen.go.golden"],
+      "severity": "low"
+    },
+    {
+      "id": "unexported-and-embedded-field-symmetry",
+      "rule": "buildSourceIndices and matchDstFields both skip a field when !f.Exported or f.Embedded is true, so only promoted (flattened) fields from an embedded struct participate in matching — never the embedded field itself as a unit, and never an unexported field on either side. Any refactor of these two skip conditions must keep them symmetric between source and destination; a version that skips unexported/embedded fields on one side but not the other would let an unassignable or unintended field slip into a mapping.",
+      "scope": ["internal/matcher/matcher.go", "internal/loader/loader.go"],
+      "severity": "low"
+    }
+  ]
+}
