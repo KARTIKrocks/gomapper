@@ -1,0 +1,26 @@
+{
+  "files": [
+    {
+      "path": "README.md",
+      "description": "User-facing flag reference, field-matching priority order, and generation-mode descriptions — the contract the code must actually implement."
+    },
+    {
+      "path": "doc.go",
+      "description": "Package-level (command-level) doc comment restating install, usage, flags, field matching, and nil-safe mode; should stay consistent with README.md."
+    },
+    {
+      "path": "internal/matcher/matcher.go",
+      "description": "The field-matching engine: tag/name resolution order, type compatibility checks (assignable/convertible/deref/addr-of/slice/nested-struct), and where a field becomes 'unmapped'. Central to nearly every rule in config.json.",
+      "scope": ["internal/**/*.go", "main.go"]
+    },
+    {
+      "path": "internal/generator/templates.go",
+      "description": "The three parallel template decision trees (func mode, register mode, slice loop) and the nil-safe/addr-of precompute blocks that must stay in sync with matcher.go's FieldMapping flags.",
+      "scope": ["internal/generator/**/*.go", "internal/matcher/**/*.go"]
+    },
+    {
+      "path": ".golangci.yml",
+      "description": "The linter ruleset already enforced in CI (note revive's 'exported' doc-comment check is explicitly disabled here) — avoid duplicating what golangci-lint already flags."
+    }
+  ]
+}
