@@ -102,7 +102,7 @@ func parseTypePairs(pairsFlag, src, dst string) []pair {
 
 // expandBidirectional adds reverse pairs for each input pair.
 func expandBidirectional(typePairs []pair) []pair {
-	var expanded []pair
+	expanded := make([]pair, 0, 2*len(typePairs))
 	for _, p := range typePairs {
 		expanded = append(expanded, p, pair{p.Dst, p.Src})
 	}
@@ -118,7 +118,7 @@ func matchAll(pkg *packages.Package, typePairs []pair, tagKey string, strict, ci
 		Verbose:         verbose,
 	}
 
-	var genPairs []generator.PairData
+	genPairs := make([]generator.PairData, 0, len(typePairs))
 	for _, p := range typePairs {
 		srcInfo, err := loader.LookupStruct(pkg, p.Src)
 		if err != nil {
