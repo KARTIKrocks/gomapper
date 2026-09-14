@@ -1,5 +1,11 @@
 version: "2"
 
+# Report every occurrence. The defaults (max-same-issues: 3) hide duplicates,
+# which makes a lint failure look smaller than it is.
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
 linters:
   enable:
     - errcheck
@@ -11,6 +17,29 @@ linters:
     - gocritic
     - gocyclo
     - revive
+    - prealloc
+    # gomapper parses arbitrary Go source and writes generated files to disk;
+    # gosec catches unsafe file handling and other injection footguns in that path.
+    - gosec
+    # Error-handling discipline: %w-wrapped errors must be compared with
+    # errors.Is/As, and sentinel errors must be named Err*.
+    - errorlint
+    - errname
+    - nilerr
+    - nilnesserr
+    # Correctness footguns.
+    - asasalint
+    - reassign
+    - usestdlibvars
+    - copyloopvar
+    - intrange
+    - makezero
+    - wastedassign
+    - unconvert
+    # Avoids extra allocations in the loader/matcher/generator's hot paths.
+    - perfsprint
+    # Keep //nolint directives specific and explained.
+    - nolintlint
   settings:
     gocyclo:
       min-complexity: 15
@@ -18,7 +47,16 @@ linters:
       rules:
         - name: exported
           disabled: true
+    errcheck:
+      # An unchecked type assertion panics; deliberate `_ =` discards still pass.
+      check-type-assertions: true
+    nolintlint:
+      require-explanation: true
+      require-specific: true
   exclusions:
+    paths:
+      # Fixture types used only as loader/matcher test input, not real code.
+      - testdata/
     rules:
       - linters:
           - errcheck
@@ -26,8 +64,24 @@ linters:
       - linters:
           - errcheck
         path: examples/
+      # Tests may assert on unwrapped errors and skip some checks that
+      # wouldn't be acceptable in code that ships to consumers.
+      - linters:
+          - errorlint
+          - gosec
+          - intrange
+          - perfsprint
+        path: _test\.go
+      # Examples are illustrative, not part of the public API surface.
+      - linters:
+          - gosec
+          - perfsprint
+        path: examples/
 
 formatters:
   enable:
     - gofmt
     - goimports
+  settings:
+    gofmt:
+      simplify: true

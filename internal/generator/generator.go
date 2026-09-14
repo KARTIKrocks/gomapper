@@ -79,5 +79,5 @@ func WriteFile(data Data, mode Mode, path string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, src, 0644)
+	return os.WriteFile(path, src, 0644) //nolint:gosec // generated Go source is meant to be readable like any other source file
 }
