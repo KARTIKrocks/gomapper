@@ -41,7 +41,7 @@ func Load(dir string) (*packages.Package, error) {
 	}
 	pkg := pkgs[0]
 	if len(pkg.Errors) > 0 {
-		return nil, fmt.Errorf("package errors: %v", pkg.Errors[0])
+		return nil, fmt.Errorf("package errors: %w", pkg.Errors[0])
 	}
 	return pkg, nil
 }
@@ -73,7 +73,7 @@ func LookupStruct(pkg *packages.Package, name string) (*StructInfo, error) {
 // prefix is used to track the accessor path for embedded fields.
 func flattenFields(st *types.Struct, prefix string) []StructField {
 	var fields []StructField
-	for i := 0; i < st.NumFields(); i++ {
+	for i := range st.NumFields() {
 		f := st.Field(i)
 		tag := reflect.StructTag(st.Tag(i))
 		accessor := prefix + f.Name()

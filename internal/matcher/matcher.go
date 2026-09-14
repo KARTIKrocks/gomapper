@@ -197,7 +197,7 @@ func filterUnmappedByCoveredParents(unmapped []UnmappedField, assignments []Nest
 	}
 	coveredParents := make(map[string]bool)
 	for _, na := range assignments {
-		parent := strings.SplitN(na.DstPath, ".", 2)[0]
+		parent, _, _ := strings.Cut(na.DstPath, ".")
 		coveredParents[parent] = true
 	}
 	var filtered []UnmappedField
@@ -224,7 +224,7 @@ func Match(src, dst *loader.StructInfo, cfg Config) (*Result, error) {
 	unmapped = filterUnmappedByCoveredParents(unmapped, assignments)
 
 	if cfg.Strict && len(unmapped) > 0 {
-		var names []string
+		names := make([]string, 0, len(unmapped))
 		for _, u := range unmapped {
 			names = append(names, u.Name)
 		}
@@ -493,9 +493,9 @@ func resolveNestedFieldType(t types.Type, path string) (types.Type, bool) {
 			return nil, false
 		}
 		found := false
-		for i := 0; i < st.NumFields(); i++ {
-			if st.Field(i).Name() == part {
-				current = st.Field(i).Type()
+		for field := range st.Fields() {
+			if field.Name() == part {
+				current = field.Type()
 				found = true
 				break
 			}
