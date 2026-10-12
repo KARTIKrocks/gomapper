@@ -1,6 +1,6 @@
-GOLANGCI_LINT_VERSION := v2.13.0
-GOIMPORTS_VERSION := v0.49.0
-GOVULNCHECK_VERSION := v1.7.0
+GOLANGCI_LINT_VERSION := v2.14.0
+GOIMPORTS_VERSION := v0.52.0
+GOVULNCHECK_VERSION := v1.9.0
 
 .PHONY: all setup deps tidy tidy-check test test-v vet lint lint-fix fix vuln print-govulncheck-version print-golangci-lint-version bench build fmt cover clean ci
 
