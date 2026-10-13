@@ -10,6 +10,9 @@ permissions:
   contents: read
 
 jobs:
+  common-mk:
+    uses: KARTIKrocks/go-build-tools/.github/workflows/check-common-mk.yml@main
+
   test:
     runs-on: ubuntu-latest
     strategy:
