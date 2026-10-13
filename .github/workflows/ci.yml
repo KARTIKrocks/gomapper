@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   common-mk:
-    uses: KARTIKrocks/go-build-tools/.github/workflows/check-common-mk.yml@main
+    uses: KARTIKrocks/go-build-tools/.github/workflows/check-common-mk.yml@6023c2444c2dbaf87b4aba9570e98fae59caf242 # pinned; bump deliberately
 
   test:
     runs-on: ubuntu-latest
