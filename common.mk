@@ -11,7 +11,7 @@
 # and keep only repo-specific targets (lint, test, vuln, ...) in their own file.
 
 # Tool versions. Renovate bumps these (see renovate.json).
-GOLANGCI_LINT_VERSION := v2.14.0
+GOLANGCI_LINT_VERSION := v2.15.0
 GOIMPORTS_VERSION := v0.52.0
 GOVULNCHECK_VERSION := v1.9.0
 
